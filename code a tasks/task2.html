@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Basic Calculator</title>
+  <style>
+    /* ─── Reset & Body ───────────────────────────────────────────────────────── */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      background: #ececec;
+      font-family: sans-serif;
+    }
+
+    /* ─── Calculator ─────────────────────────────────────────────────────────── */
+    .calculator {
+      background: #1f1f2e;
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+      width: 320px;
+      overflow: hidden;
+    }
+    .display {
+      background: #000;
+      color: #0f0;
+      font-size: 2rem;
+      text-align: right;
+      padding: 20px;
+      height: 1.5em;
+      overflow-x: auto;
+    }
+
+    /* ─── Buttons Grid ───────────────────────────────────────────────────────── */
+    .buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+    }
+    .buttons button {
+      padding: 20px;
+      font-size: 1.2rem;
+      border: 1px solid #333;
+      background: #2d2d44;
+      color: #fff;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .buttons button:hover { background: #3e3e5a; }
+    .buttons button:active { background: #1b1b2a; transform: scale(0.98); }
+
+    /* ─── Special Buttons ────────────────────────────────────────────────────── */
+    #clear { background: #c0392b; grid-column: span 2; }
+    #clear:hover { background: #e74c3c; }
+    #backspace { background: #f39c12; }
+    #backspace:hover { background: #f1c40f; }
+    [data-op] { background: #2980b9; }
+    [data-op]:hover { background: #3498db; }
+    #equals {
+      background: #27ae60;
+      grid-column: span 2;
+    }
+    #equals:hover { background: #2ecc71; }
+  </style>
+</head>
+<body>
+
+  <div class="calculator">
+    <div id="display" class="display">0</div>
+    <div class="buttons">
+      <button id="clear">C</button>
+      <button id="backspace">⌫</button>
+      <button data-op="/">÷</button>
+      <button data-op="*">×</button>
+
+      <button>7</button><button>8</button><button>9</button><button data-op="-">−</button>
+      <button>4</button><button>5</button><button>6</button><button data-op="+">+</button>
+      <button>1</button><button>2</button><button>3</button><button id="equals">=</button>
+      <button>0</button><button>.</button>
+    </div>
+  </div>
+
+  <script>
+    const display = document.getElementById('display');
+    let current = '';
+
+    function update() {
+      display.textContent = current || '0';
+    }
+
+    function appendNumber(n) {
+      if (n === '.' && current.includes('.')) return;
+      current += n;
+      update();
+    }
+
+    function appendOperator(op) {
+      if (!current || /[+\-*/]$/.test(current)) return;
+      current += op;
+      update();
+    }
+
+    function clearAll() {
+      current = '';
+      update();
+    }
+
+    function backspace() {
+      current = current.slice(0, -1);
+      update();
+    }
+
+    function calculate() {
+      try {
+        // safe-ish eval
+        current = String(eval(current));
+      } catch {
+        current = 'Error';
+      }
+      update();
+    }
+
+    // Button clicks
+    document.querySelector('.buttons').addEventListener('click', e => {
+      if (!e.target.matches('button')) return;
+      const btn = e.target, val = btn.textContent;
+      if (btn.id === 'clear') clearAll();
+      else if (btn.id === 'backspace') backspace();
+      else if (btn.id === 'equals') calculate();
+      else if (btn.dataset.op) appendOperator(btn.dataset.op);
+      else appendNumber(val);
+    });
+
+    // Keyboard support
+    document.addEventListener('keydown', e => {
+      if (e.key >= '0' && e.key <= '9') appendNumber(e.key);
+      else if (e.key === '.' ) appendNumber('.');
+      else if (['+','-','*','/'].includes(e.key)) appendOperator(e.key);
+      else if (e.key === 'Enter') { e.preventDefault(); calculate(); }
+      else if (e.key === 'Backspace') backspace();
+      else if (e.key.toLowerCase() === 'c') clearAll();
+    });
+  </script>
+
+</body>
+</html>
